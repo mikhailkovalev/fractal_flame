@@ -1,5 +1,7 @@
 import random
 import numpy as np
+from PIL import Image
+from operator import mul
 from functools import partial
 
 from transformations import (LinearTransformation, SinusoidalTransformation, 
@@ -8,10 +10,10 @@ from transformations import (LinearTransformation, SinusoidalTransformation,
 
 
 def main():
-    point_count = 100
+    point_count = 1000
     image_size = (809, 500)
-    linear_transformations_count = 10
-    active_iteration_count = 10
+    linear_transformations_count = 3
+    active_iteration_count = 30
     inactive_iteration_count = 20
 
     linear_transformations = [
@@ -19,20 +21,24 @@ def main():
         for i in range(linear_transformations_count)
     ]
 
+    colors = [
+        tuple((random.randrange(256) for j in range(3)))
+        for i in range(linear_transformations_count)
+    ]
+
     non_linear_transformations = [
-        SinusoidalTransformation(),
-        DiskTransformation(),
-        HeartTransformation(),
+        # SinusoidalTransformation(),
+        # DiskTransformation(),
+        # HeartTransformation(),
         PolarTransformation(),
-        SphericalTransformation(),
+        # SphericalTransformation(),
     ]
     non_linear_transformations_count = len(non_linear_transformations)
 
     min_image_size = min(image_size)
 
     x_radius, y_radius = (e / min_image_size for e in image_size)
-    print('x_radius', x_radius)
-    print('y_radius', y_radius)
+    
     get_x = partial(random.uniform, -x_radius, x_radius)
     get_y = partial(random.uniform, -y_radius, y_radius)
     
@@ -43,36 +49,55 @@ def main():
     scale_y = offset_y / y_radius
     
     def to_screen(point):
-        return (round(point[0] * scale_x + offset_x), 
-                round(point[1] * scale_y + offset_y))
-                
-    print('scale_x', scale_x)
-    print('offset_x', offset_x)
-    print('scale_y', scale_y)
-    print('offset_x', offset_y)
-                
-    return
+        return (int(0.5 + point[0] * scale_x + offset_x), 
+                int(0.5 + point[1] * scale_y + offset_y))
 
+    def get_idx(point):
+        column, row = to_screen(point)
+        return row * image_size[1] + column
+
+    img = Image.new('RGB', image_size)
+    img_data = list(img.getdata())
+    pixel_counters = [0] * mul(*image_size)
+                
     for point_idx in range(point_count):
-        point = np.array((get_x(), get_y()))
+        percentage = 100 * point_idx / point_count
+        if point_idx > 0:
+            print('\r', end='')
+        print('Done {:.2f}%'.format(percentage), end='')
+        new_point = np.array((get_x(), get_y()))
 
         for iteration_idx in range(-inactive_iteration_count,
                                    active_iteration_count):
             transformation_idx = random.randrange(
                 linear_transformations_count)
 
+            color = colors[transformation_idx]
+
             point = linear_transformations[
-                transformation_idx].apply(point)
+                transformation_idx].apply(new_point)
 
             transformation_idx = random.randrange(
                 non_linear_transformations_count)
-            point = non_linear_transformations[
+            new_point = non_linear_transformations[
                 transformation_idx].apply(point)
             
             if (iteration_idx > 0 and 
-                    np.fabs(point[0]) <= x_radius and 
-                    np.fabs(point[1]) <= y_radius):
-                x, y = to_screen(point)           
+                    np.fabs(new_point[0]) <= x_radius and 
+                    np.fabs(new_point[1]) <= y_radius):
+                pixel_idx = get_idx(new_point)
+                
+                if pixel_counters[pixel_idx] == 0:
+                    img_data[pixel_idx] = color
+                else:
+                    img_data[pixel_idx] = tuple(map(lambda x, y: (x+y) >> 1, img_data[pixel_idx], color))
+                   
+                pixel_counters[pixel_idx] += 1
+
+    img.putdata(img_data)
+    img.save('./out.png')
+    print()
+    img.show()
 
 
 if __name__ == '__main__':

@@ -11,10 +11,9 @@ class Transformation:
 class LinearTransformation(Transformation):
     __radius = 1.2
 
-    def __init__(self, matrix, offset, color):
+    def __init__(self, matrix, offset):
         self.matrix = matrix
         self.offset = offset
-        self.color = color
 
     def apply(self, point):
         return np.dot(self.matrix, np.array(point)) + self.offset
@@ -42,8 +41,7 @@ class LinearTransformation(Transformation):
     
         matrix = np.array((a, b, c, d)).reshape((2, 2))
         offset = np.array((c, f))
-        color = [random.random() for i in range(3)]
-        return cls(matrix, offset, color)
+        return cls(matrix, offset)
 
 
 class SinusoidalTransformation(Transformation):
@@ -61,7 +59,7 @@ class SphericalTransformation(Transformation):
 class PolarTransformation(Transformation):
     def apply(self, point):
         x, y = point
-        return np.array((np.arctan(y, x)/np.pi, np.sqrt(x*x + y*y) - 1))
+        return np.array((np.arctan(y/x)/np.pi, np.sqrt(x*x + y*y) - 1))
 
 
 class HeartTransformation(Transformation):
