@@ -50,6 +50,7 @@ class SinusoidalTransformation(Transformation):
     def apply(self, point):
         return np.sin(point)
 
+
 class SphericalTransformation(Transformation):
     def apply(self, point):
         x, y = point
