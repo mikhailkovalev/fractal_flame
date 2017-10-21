@@ -31,8 +31,27 @@ def main():
     min_image_size = min(image_size)
 
     x_radius, y_radius = (e / min_image_size for e in image_size)
+    print('x_radius', x_radius)
+    print('y_radius', y_radius)
     get_x = partial(random.uniform, -x_radius, x_radius)
     get_y = partial(random.uniform, -y_radius, y_radius)
+    
+    offset_x = 0.5 * image_size[0]
+    scale_x = offset_x / x_radius
+    
+    offset_y = 0.5 * image_size[1]
+    scale_y = offset_y / y_radius
+    
+    def to_screen(point):
+        return (round(point[0] * scale_x + offset_x), 
+                round(point[1] * scale_y + offset_y))
+                
+    print('scale_x', scale_x)
+    print('offset_x', offset_x)
+    print('scale_y', scale_y)
+    print('offset_x', offset_y)
+                
+    return
 
     for point_idx in range(point_count):
         point = np.array((get_x(), get_y()))
@@ -49,6 +68,11 @@ def main():
                 non_linear_transformations_count)
             point = non_linear_transformations[
                 transformation_idx].apply(point)
+            
+            if (iteration_idx > 0 and 
+                    np.fabs(point[0]) <= x_radius and 
+                    np.fabs(point[1]) <= y_radius):
+                x, y = to_screen(point)           
 
 
 if __name__ == '__main__':
