@@ -9,7 +9,7 @@ class Transformation:
 
 
 class LinearTransformation(Transformation):
-    __radius = 1.2
+    __radius = 0.2
 
     def __init__(self, matrix, offset):
         self.matrix = matrix

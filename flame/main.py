@@ -10,11 +10,11 @@ from transformations import (LinearTransformation, SinusoidalTransformation,
 
 
 def main():
-    point_count = 1000
+    point_count = 10000
     image_size = (809, 500)
-    linear_transformations_count = 3
+    linear_transformations_count = 5
     active_iteration_count = 30
-    inactive_iteration_count = 20
+    inactive_iteration_count = 0
 
     linear_transformations = [
         LinearTransformation.generate() 
@@ -30,7 +30,7 @@ def main():
         # SinusoidalTransformation(),
         # DiskTransformation(),
         # HeartTransformation(),
-        PolarTransformation(),
+        # PolarTransformation(),
         # SphericalTransformation(),
     ]
     non_linear_transformations_count = len(non_linear_transformations)
@@ -65,7 +65,7 @@ def main():
         if point_idx > 0:
             print('\r', end='')
         print('Done {:.2f}%'.format(percentage), end='')
-        new_point = np.array((get_x(), get_y()))
+        point = np.array((get_x(), get_y()))
 
         for iteration_idx in range(-inactive_iteration_count,
                                    active_iteration_count):
@@ -75,17 +75,17 @@ def main():
             color = colors[transformation_idx]
 
             point = linear_transformations[
-                transformation_idx].apply(new_point)
-
-            transformation_idx = random.randrange(
-                non_linear_transformations_count)
-            new_point = non_linear_transformations[
                 transformation_idx].apply(point)
+
+            #transformation_idx = random.randrange(
+            #    non_linear_transformations_count)
+            #point = non_linear_transformations[
+            #    transformation_idx].apply(point)
             
             if (iteration_idx > 0 and 
-                    np.fabs(new_point[0]) <= x_radius and 
-                    np.fabs(new_point[1]) <= y_radius):
-                pixel_idx = get_idx(new_point)
+                    np.fabs(point[0]) <= x_radius and 
+                    np.fabs(point[1]) <= y_radius):
+                pixel_idx = get_idx(point)
                 
                 if pixel_counters[pixel_idx] == 0:
                     img_data[pixel_idx] = color
