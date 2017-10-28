@@ -10,11 +10,11 @@ from transformations import (LinearTransformation, SinusoidalTransformation,
 
 
 def main():
-    point_count = 10000
+    point_count = 1000
     image_size = (809, 500)
     linear_transformations_count = 5
-    active_iteration_count = 30
-    inactive_iteration_count = 0
+    active_iteration_count = 300
+    inactive_iteration_count = 20
 
     linear_transformations = [
         LinearTransformation.generate() 
