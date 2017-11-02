@@ -1,46 +1,73 @@
+import sys
 import numpy as np
-from math import ceil
+from random import choice
 from operator import itemgetter
-from PIL import Image, ImageDraw
+from PIL import Image
 
 from transformations import LinearTransformation
 
 
 def main():
-    t2 = LinearTransformation(
-        np.array((-0.5, -0.5, 0.5, -0.5)).reshape((2, 2)),
-        np.array((490.0, 120.0))
-    )
-    t1 = LinearTransformation(
-        np.array((0.5, -0.5, 0.5, 0.5)).reshape((2, 2)),
-        np.array((340.0, -110.0))
+    transformations = (
+        LinearTransformation(
+            np.array((0.5, 0.5, 0.5, -0.5)).reshape((2, 2)),
+            np.array((0.0, 0.0))
+        ),
+        LinearTransformation(
+            np.array((0.5, 0.5, -0.5, 0.5)).reshape((2, 2)),
+            np.array((0.5, 0.5))
+        ),
     )
 
-    points = [np.array((0.0, 0.0))]
-    points_count = 1
-    iteration_count = 2
+    point = np.array((1, 0.1))
+
+    width, height = 800, 494
+
+    iteration_count = 1000000
+    points = [None] * iteration_count
+
     for i in range(iteration_count):
-        new_points_count = points_count << 1
-        new_points = [None] * new_points_count
-        for j, point in enumerate(points):
-            idx = j << 1
-            new_points[idx] = t1.apply(point)
-            new_points[idx+1] = t2.apply(point)
-        points = new_points
-        points_count = new_points_count
+        if i % 5 == 0:
+            percentage = 100 * i / iteration_count
+            if i > 0:
+                print('\r', end='')
+            print('Generated {:.2f}%'.format(percentage), end='')
+            sys.stdout.flush()
+        t = choice(transformations)
+        point = t.apply(point)
+        points[i] = point
+    print()
 
-    min_x = min(map(itemgetter(0), points))
-    max_x = max(map(itemgetter(0), points))
-    min_y = min(map(itemgetter(1), points))
-    max_y = max(map(itemgetter(1), points))
+    x_min = min(map(itemgetter(0), points))
+    x_max = max(map(itemgetter(0), points))
 
-    points = list(map(lambda x: (x[0]-min_x, x[1]-min_y), points))
+    y_min = min(map(itemgetter(1), points))
+    y_max = max(map(itemgetter(1), points))
 
-    img = Image.new('1', (ceil(max_x - min_x), ceil(max_y - min_y)), 1)
-    draw = ImageDraw.Draw(img)
-    draw.line(points, fill=0)
-    print(points)
-    img.show()
+    ax = (width-1) / (x_max-x_min)
+    bx = -ax * x_min
+
+    ay = (height-1) / (y_min-y_max)
+    by = -ay * y_max
+
+    image_data = [1] * (width*height)
+
+    for i, point in enumerate(points):
+        if i % 5 == 0:
+            percentage = 100 * i / iteration_count
+            if i > 0:
+                print('\r', end='')
+            print('Rendered {:.2f}%'.format(percentage), end='')
+            sys.stdout.flush()
+        x, y = point
+        row = int(ay*y + by)
+        column = int(ax*x + bx)
+        image_data[column + row * width] = 0
+    print()
+
+    img = Image.new('1', (width, height))
+    img.putdata(image_data)
+    img.save('./out.png')
 
 
 if __name__ == '__main__':
