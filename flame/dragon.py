@@ -10,12 +10,16 @@ from transformations import LinearTransformation
 def main():
     transformations = (
         LinearTransformation(
-            np.array((0.5, 0.5, 0.5, -0.5)).reshape((2, 2)),
+            np.array((0.5, 0.0, 0.0, 0.5)).reshape((2, 2)),
             np.array((0.0, 0.0))
         ),
         LinearTransformation(
-            np.array((0.5, 0.5, -0.5, 0.5)).reshape((2, 2)),
-            np.array((0.5, 0.5))
+            np.array((0.5, 0.0, 0.0, 0.5)).reshape((2, 2)),
+            np.array((0.5, 0.0))
+        ),
+        LinearTransformation(
+            np.array((0.5, 0.0, 0.0, 0.5)).reshape((2, 2)),
+            np.array((0.25, 0.433))
         ),
     )
 
